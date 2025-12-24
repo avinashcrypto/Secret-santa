@@ -1,276 +1,222 @@
-@@ -0,0 +1,275 @@
-# Secret Santa FHEVM 🎅
+# Secret Santa Frontend
 
-A fully privacy-preserving Secret Santa gift exchange platform built on Zama's Fully Homomorphic Encryption Virtual Machine (FHEVM).
+React frontend for the Secret Santa FHEVM platform.
 
-![License](https://img.shields.io/badge/license-MIT-blue.svg)
-![Solidity](https://img.shields.io/badge/Solidity-0.8.28-orange.svg)
-![React](https://img.shields.io/badge/React-18-blue.svg)
-![TypeScript](https://img.shields.io/badge/TypeScript-5.6-blue.svg)
+## 🎨 Features
 
-## 🎯 Overview
+- **Modern UI**: Apple-style design with glassmorphism effects
+- **Smooth Animations**: Framer Motion for delightful interactions
+- **Web3 Integration**: RainbowKit for seamless wallet connection
+- **FHE Operations**: Full encryption/decryption support via fhevmjs
+- **Responsive Design**: Works beautifully on desktop and mobile
+- **TypeScript**: Full type safety throughout the codebase
 
-Secret Santa FHEVM enables groups to organize gift exchanges with complete privacy guarantees. Using Zama's Fully Homomorphic Encryption, **no one** (not even the contract owner or admin) can see who is assigned to give gifts to whom until the designated reveal time.
-
-### Key Features
-
-- **🔒 Complete Privacy**: Gift assignments remain encrypted on-chain until reveal
-- **🎲 Fair Random Matching**: FHE-based circular matching algorithm ensures unpredictable assignments
-- **⚡ Gas Optimized**: Uses `euint8` for participant indices (~70% gas savings vs `euint256`)
-- **🎨 Beautiful UI**: Apple-style design with smooth animations using Framer Motion
-- **🌍 Multi-Environment**: Supports demo (6min), test (12min), and production (6 days) configurations
-- **✅ Fully Tested**: Comprehensive test suite with >80% coverage
-
-## 🏗️ Architecture
-
-### Smart Contract Innovation
-
-The core innovation is an **encrypted circular matching algorithm**:
-
-```solidity
-// Generate encrypted random offset (only known to the KMS)
-euint32 encryptedOffset = FHE.randEuint32(upperBound);
-
-// Calculate recipient: (myIndex + offset) % participantCount
-// This creates a circular permutation ensuring no self-matches
-euint32 recipientIndex = FHE.rem(
-    FHE.add(myIndexEnc, encryptedMatchingOffset),
-    FHE.asEuint32(participantCount)
-);
-```
-
-**Why This Matters:**
-- No trusted coordinator needed
-- Cryptographically guaranteed fairness
-- No one can predict or manipulate assignments
-- Privacy preserved until reveal via Gateway/KMS decryption
-
-### Tech Stack
-
-**Smart Contracts:**
-- Solidity 0.8.28
-- FHEVM (fhevm-contracts v0.5.x)
-- Hardhat development environment
-- Sepolia testnet deployment
-
-**Frontend:**
-- React 18 + TypeScript
-- Vite build tool
-- fhevmjs for FHE operations
-- RainbowKit + wagmi for wallet integration
-- TailwindCSS + Framer Motion for UI
-- Vercel deployment
-
-## 📁 Repository Structure
+## 📁 Structure
 
 ```
-submission/
-├── smart-contracts/          # Solidity smart contracts
-│   ├── contracts/
-│   │   └── SecretSanta.sol  # Main contract
-│   ├── scripts/
-│   │   ├── deploy-demo.ts   # Demo deployment (6 min)
-│   │   ├── deploy-test.ts   # Test deployment (12 min)
-│   │   └── deploy.ts        # Production deployment (6 days)
-│   ├── test/
-│   │   └── SecretSanta.test.ts
-│   ├── hardhat.config.ts
-│   ├── package.json
-│   └── .env.example
-│
-└── frontend/                 # React frontend
-    ├── src/
-    │   ├── components/
-    │   ├── hooks/
-    │   ├── lib/
-    │   └── types/
-    ├── vite.config.ts
-    ├── package.json
-    └── .env.example
+frontend/
+├── src/
+│   ├── components/
+│   │   ├── game/          # Game-specific components
+│   │   ├── layout/        # Layout components (Header, Footer)
+│   │   └── ui/            # Reusable UI components (Button, Card)
+│   ├── hooks/
+│   │   ├── useFHEVM.ts    # FHE initialization
+│   │   ├── useEncryption.ts
+│   │   ├── useDecryption.ts
+│   │   └── useSecretSanta.ts
+│   ├── lib/
+│   │   └── SecretSanta.abi.json  # Contract ABI
+│   ├── types/
+│   │   └── contracts.ts   # TypeScript types
+│   ├── utils/
+│   │   └── format.ts      # Formatting utilities
+│   ├── App.tsx
+│   └── main.tsx
+├── public/
+├── index.html
+├── vite.config.ts
+├── tailwind.config.js
+├── postcss.config.js
+└── package.json
 ```
 
-## 🚀 Quick Start
+## 🛠️ Setup
 
-### Prerequisites
-
-- Node.js v18+ and npm v7+
-- MetaMask or compatible Web3 wallet
-- Sepolia testnet ETH ([faucet](https://sepoliafaucet.com/))
-
-### Smart Contract Deployment
-
-1. **Navigate to smart contracts directory:**
-```bash
-cd submission/smart-contracts
-```
-
-2. **Install dependencies:**
+1. **Install dependencies:**
 ```bash
 npm install
 ```
 
-3. **Configure environment:**
+2. **Configure environment:**
 ```bash
 cp .env.example .env
-# Edit .env with your PRIVATE_KEY, SEPOLIA_RPC_URL, and ETHERSCAN_API_KEY
 ```
 
-4. **Compile contracts:**
-```bash
-npm run compile
+Edit `.env` with your values:
+```env
+VITE_CONTRACT_ADDRESS=your_contract_address
+VITE_CHAIN_ID=11155111
+VITE_SEPOLIA_RPC_URL=your_rpc_url
+VITE_WALLETCONNECT_PROJECT_ID=  # Optional
+VITE_MOCK_FHE=false
+VITE_ENV=demo
 ```
 
-5. **Run tests:**
-```bash
-npm run test
-```
-
-6. **Deploy to Sepolia:**
-```bash
-# Demo environment (6 minutes total)
-npm run deploy:demo
-
-# Test environment (12 minutes total)
-npm run deploy:test
-
-# Production environment (6 days total)
-npm run deploy:production
-```
-
-7. **Verify on Etherscan:**
-```bash
-# Example for demo deployment
-npx hardhat verify --network sepolia <CONTRACT_ADDRESS> 180 120 60 100000000000000 3 5
-```
-
-### Frontend Setup
-
-1. **Navigate to frontend directory:**
-```bash
-cd submission/frontend
-```
-
-2. **Install dependencies:**
-```bash
-npm install
-```
-
-3. **Configure environment:**
-```bash
-cp .env.example .env
-# Update VITE_CONTRACT_ADDRESS with your deployed contract address
-# Update VITE_SEPOLIA_RPC_URL with your RPC endpoint
-```
-
-4. **Start development server:**
+3. **Start development server:**
 ```bash
 npm run dev
 ```
 
-5. **Build for production:**
+4. **Build for production:**
 ```bash
 npm run build
 ```
 
-## 🎮 How to Play
+## 🚀 Deployment
 
-### For Participants:
+### Vercel Deployment
 
-1. **Registration Phase**
-   - Connect your wallet
-   - Pay the entry fee (0.0001 ETH for demo)
-   - Wait for minimum participants
-
-2. **Matching Phase**
-   - Admin starts the matching process
-   - FHE algorithm assigns recipients (encrypted)
-   - Query your recipient's encrypted index
-
-3. **Gift Submission Phase**
-   - Submit your gift value (encrypted)
-   - Add metadata URI (IPFS link, message, etc.)
-   - Gift information remains private
-
-4. **Reveal Phase**
-   - After reveal time, admin triggers decryption
-   - All matches and gifts become public
-   - See who gave you a gift!
-
-### For Admin (Contract Owner):
-
-1. Deploy contract with desired parameters
-2. Wait for registration period to end
-3. Call `startMatching()` to generate encrypted assignments
-4. After submission deadline, call `triggerReveal()` to decrypt matches
-
-## 🔐 Security Features
-
-- **No Trusted Coordinator**: Matching algorithm runs entirely on encrypted data
-- **Immutable Parameters**: Registration period, entry fee, etc. set at deployment
-- **Access Control**: Only owner can trigger matching and reveal
-- **FHE Gateway**: Decryption requests go through Zama's Gateway/KMS
-- **Reentrancy Protection**: Uses OpenZeppelin's `nonReentrant` modifier
-
-## 📊 Deployment Configurations
-
-| Parameter | Demo | Test | Production |
-|-----------|------|------|------------|
-| Registration Period | 3 min | 5 min | 3 days |
-| Gift Submission Period | 2 min | 5 min | 2 days |
-| Reveal Delay | 1 min | 2 min | 1 day |
-| Entry Fee | 0.0001 ETH | 0.001 ETH | 0.01 ETH |
-| Min Participants | 3 | 3 | 3 |
-| Max Participants | 5 | 10 | 20 |
-| **Total Duration** | **~6 min** | **~12 min** | **~6 days** |
-
-## 🧪 Testing
-
-Smart contracts include comprehensive tests covering:
-- Registration mechanics
-- Matching algorithm
-- Gift submission
-- Reveal process
-- Edge cases and error conditions
-
-Run tests:
+1. **Install Vercel CLI:**
 ```bash
-cd submission/smart-contracts
-npm run test
-npm run coverage  # For coverage report
+npm install -g vercel
 ```
 
-## 🌐 Live Demo
+2. **Build and deploy:**
+```bash
+npm run build
+vercel --prod
+```
 
-- **Demo Contract**: [View on Sepolia Etherscan](https://sepolia.etherscan.io/address/0xe981c08Dd5C337bA33053ac451AE93c94ee764Cd)
-- **Frontend**: [Live Demo on Vercel](#) ([Update with your Vercel URL](https://zamasecretsanta.vercel.app/))
+### Environment Variables on Vercel
 
-## 📖 Documentation
+Set the following environment variables in your Vercel project:
+- `VITE_CONTRACT_ADDRESS`
+- `VITE_CHAIN_ID`
+- `VITE_SEPOLIA_RPC_URL`
+- `VITE_WALLETCONNECT_PROJECT_ID` (optional)
+- `VITE_MOCK_FHE`
+- `VITE_ENV`
 
-For detailed documentation, see:
-- [Smart Contract Architecture](./smart-contracts/contracts/SecretSanta.sol)
-- [Frontend Integration Guide](./frontend/src/hooks/useFHEVM.ts)
-- [Deployment Guide](./DEPLOYMENT.md) *(if you want to include deployment docs)*
+## 🎮 Components
 
-## 🤝 Contributing
+### Game Components
 
-This project was built for the Zama Developer Program. Contributions, issues, and feature requests are welcome!
+- **GameRegistration**: Handle user registration
+- **AdminPanel**: Admin controls (start matching, trigger reveal)
+- **GiftSubmission**: Submit encrypted gifts
+- **ParticipantList**: Display all participants
+- **RevealResults**: Show revealed matches
+- **GameTimeline**: Visual timeline of game phases
 
-## 📜 License
+### UI Components
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+- **Button**: Styled button with loading states
+- **Card**: Glassmorphism card component
+- **Header**: Navigation and wallet connection
+- **Footer**: Project information
+- **Layout**: Main layout wrapper
 
-## 🙏 Acknowledgments
+## 🔧 Key Hooks
 
-- [Zama](https://www.zama.ai/) for FHEVM technology
-- [fhevm-contracts](https://github.com/zama-ai/fhevm-contracts) template
-- [fhevm-react-template](https://github.com/zama-ai/fhevm-react-template) for frontend structure
+### `useFHEVM()`
+Initializes the FHEVM instance with WASM files:
+```typescript
+const { fhevmInstance, isInitialized, error } = useFHEVM();
+```
 
-## 📧 Contact
+### `useEncryption(contractAddress)`
+Encrypts values for smart contract submission:
+```typescript
+const { encryptValue, isEncrypting } = useEncryption(contractAddress);
+const { handle, proof } = await encryptValue(100, 'uint256');
+```
 
-For questions or feedback, please open an issue on GitHub.
+### `useDecryption(contractAddress)`
+Decrypts encrypted values from the blockchain:
+```typescript
+const { decrypt32, isDecrypting } = useDecryption(contractAddress);
+const recipientIndex = await decrypt32(encryptedHandle);
+```
 
----
+### `useSecretSanta()`
+Main hook for contract interactions:
+```typescript
+const {
+  gameInfo,
+  participants,
+  register,
+  submitGift,
+  isRegistered,
+  myGiftSubmitted
+} = useSecretSanta();
+```
 
-**Built with ❤️ for the Zama Developer Program**
+## 🎨 Styling
 
-**Submission Date**:   December 2025
+The project uses:
+- **TailwindCSS**: Utility-first CSS framework
+- **Custom Theme**: Christmas colors (red, green, gold)
+- **Glassmorphism**: Frosted glass effects with backdrop-blur
+- **Framer Motion**: Smooth animations and transitions
+
+### Color Palette
+```css
+/* Christmas Theme */
+--santa: #ef4444 (red)
+--evergreen: #22c55e (green)
+--gold: #fbbf24 (gold)
+--snow: #f8fafc (white/light gray)
+```
+
+## 🔐 Security Notes
+
+- All sensitive data (private keys, RPC URLs) stored in environment variables
+- Never commit `.env` files to version control
+- FHE operations ensure privacy of encrypted data
+- Wallet signatures required for sensitive operations
+
+## 📦 Dependencies
+
+### Core
+- `react` & `react-dom`: UI framework
+- `typescript`: Type safety
+- `vite`: Build tool
+
+### Web3
+- `fhevmjs`: FHE operations
+- `viem`: Ethereum interactions
+- `wagmi`: React hooks for Ethereum
+- `@rainbow-me/rainbowkit`: Wallet connection UI
+
+### UI
+- `tailwindcss`: Styling
+- `framer-motion`: Animations
+- `lucide-react`: Icons
+
+### Build
+- `vite-plugin-static-copy`: Copy WASM files
+- `buffer`, `process`, `stream-browserify`: Node.js polyfills
+
+## 🐛 Troubleshooting
+
+### WASM Loading Issues
+If you see "Failed to initialize FHEVM" errors:
+1. Clear browser cache
+2. Ensure WASM files are being served with `application/wasm` MIME type
+3. Check that `vite-plugin-static-copy` is properly configured
+
+### Wallet Connection Issues
+1. Ensure MetaMask is installed
+2. Switch to Sepolia testnet
+3. Check that you have Sepolia ETH
+
+### Build Errors
+If TypeScript errors occur during build:
+1. Run `npm install` to ensure all dependencies are installed
+2. Check that all `.env` variables are set
+3. Clear build cache: `rm -rf dist .vite node_modules/.vite`
+
+## 📝 License
+
+MIT
